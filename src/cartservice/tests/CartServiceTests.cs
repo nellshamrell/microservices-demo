@@ -13,12 +13,16 @@
 // limitations under the License.
 
 using System;
+using System.Net;
 using System.Threading.Tasks;
 using Grpc.Net.Client;
 using Hipstershop;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.Caching.StackExchangeRedis;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using Xunit;
 using static Hipstershop.CartService;
 
@@ -36,6 +40,29 @@ namespace cartservice.tests
                     .UseStartup<Startup>()
                     .UseTestServer();
             });
+        }
+
+        [Fact]
+        public async Task RedisUri_IsConvertedToStackExchangeConfiguration()
+        {
+            using var host = new HostBuilder().ConfigureWebHost(webBuilder =>
+            {
+                webBuilder
+                    .UseSetting("REDIS_ADDR", "rediss://:secret@cache.example:6380")
+                    .UseStartup<Startup>()
+                    .UseTestServer();
+            }).Build();
+
+            await host.StartAsync();
+
+            var options = host.Services.GetRequiredService<IOptions<RedisCacheOptions>>().Value.ConfigurationOptions;
+            Assert.NotNull(options);
+            Assert.False(options.AbortOnConnectFail);
+            Assert.Equal("secret", options.Password);
+            Assert.True(options.Ssl);
+            var endpoint = Assert.IsType<DnsEndPoint>(options.EndPoints[0]);
+            Assert.Equal("cache.example", endpoint.Host);
+            Assert.Equal(6380, endpoint.Port);
         }
 
         [Fact]

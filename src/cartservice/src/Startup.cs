@@ -10,6 +10,7 @@ using Microsoft.Extensions.Hosting;
 using cartservice.cartstore;
 using cartservice.services;
 using Microsoft.Extensions.Caching.StackExchangeRedis;
+using StackExchange.Redis;
 
 namespace cartservice
 {
@@ -35,7 +36,7 @@ namespace cartservice
             {
                 services.AddStackExchangeRedisCache(options =>
                 {
-                    options.Configuration = redisAddress;
+                    ConfigureRedis(options, redisAddress);
                 });
                 services.AddSingleton<ICartStore, RedisCartStore>();
             }
@@ -57,6 +58,41 @@ namespace cartservice
 
 
             services.AddGrpc();
+        }
+
+        private static void ConfigureRedis(RedisCacheOptions options, string address)
+        {
+            if (!Uri.TryCreate(address, UriKind.Absolute, out var uri) ||
+                (uri.Scheme != "redis" && uri.Scheme != "rediss"))
+            {
+                options.Configuration = address;
+                return;
+            }
+
+            var redisOptions = new ConfigurationOptions
+            {
+                AbortOnConnectFail = false,
+                Ssl = uri.Scheme == "rediss"
+            };
+            redisOptions.EndPoints.Add(uri.Host, uri.Port);
+
+            var separator = uri.UserInfo.IndexOf(':');
+            if (separator >= 0)
+            {
+                var user = Uri.UnescapeDataString(uri.UserInfo[..separator]);
+                if (!string.IsNullOrEmpty(user))
+                {
+                    redisOptions.User = user;
+                }
+
+                redisOptions.Password = Uri.UnescapeDataString(uri.UserInfo[(separator + 1)..]);
+            }
+            else if (!string.IsNullOrEmpty(uri.UserInfo))
+            {
+                redisOptions.Password = Uri.UnescapeDataString(uri.UserInfo);
+            }
+
+            options.ConfigurationOptions = redisOptions;
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
