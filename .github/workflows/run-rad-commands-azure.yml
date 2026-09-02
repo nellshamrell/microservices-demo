@@ -107,7 +107,10 @@ jobs:
       - name: Connect to AKS cluster
         if: ${{ vars.AZURE_AKS_CLUSTER_NAME != '' }}
         run: |
+          # Admin credentials avoid the kubelogin exec plugin, which is not
+          # available in the Radius resource-provider containers.
           az aks get-credentials \
+            --admin \
             --resource-group "${{ vars.AZURE_RESOURCE_GROUP }}" \
             --name "${{ vars.AZURE_AKS_CLUSTER_NAME }}" \
             --subscription "${{ vars.AZURE_SUBSCRIPTION_ID }}" \
