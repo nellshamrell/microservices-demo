@@ -532,6 +532,9 @@ resource frontendContainer 'Radius.Compute/containers@2025-08-01-preview' = {
           SHIPPING_SERVICE_ADDR: {
             value: '${shippingserviceContainer.properties.hosts['shippingservice']}:50051'
           }
+          SHOPPING_ASSISTANT_SERVICE_ADDR: {
+            value: 'shoppingassistantservice:80'
+          }
         }
         ports: {
           web: {
