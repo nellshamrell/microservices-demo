@@ -67,9 +67,9 @@ resource cartserviceImage 'Radius.Compute/containerImages@2025-08-01-preview' = 
     application: microservicesDemoApp.id
     codeReference: 'src/cartservice/src/Dockerfile'
     build: {
-      source: 'git::https://github.com/nellshamrell/microservices-demo.git//src/cartservice/src?ref=72ba613a05f7fcee51cf1d0badff401b6ae7074d'
+      source: 'git::https://github.com/nellshamrell/microservices-demo.git//src/cartservice/src?ref=72390a864b26690cc322736577044e7bd07be581'
     }
-    tag: '72ba613'
+    tag: '72390a8'
   }
   dependsOn: [
     registryCreds
