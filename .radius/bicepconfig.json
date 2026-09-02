@@ -1,0 +1,20 @@
+{
+  "experimentalFeaturesEnabled": {
+    "extensibility": true
+  },
+  "extensions": {
+    "radius": "br:biceptypes.azurecr.io/radius:0.60"
+  },
+  "analyzers": {
+    "core": {
+      "rules": {
+        "prefer-unquoted-property-names": {
+          "level": "off"
+        },
+        "use-secure-value-for-secure-inputs": {
+          "level": "off"
+        }
+      }
+    }
+  }
+}
